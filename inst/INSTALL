@@ -4,116 +4,51 @@ GNU R package cplexAPI: R Interface to C API of IBM ILOG CPLEX
 The installation procedure for the cplexAPI package needs to know where to
 find the CPLEX include directory and where to find the callable library.
 
+I have a very large mixed integer problem to solve.   COIN‘s solver accessed through Rsymphony did a decent job, but had trouble finding feasible solutions.  I had been told that the IBM cplex  solver was the best on the market for mixed integer programming.
 
-# ---------------------------------------------------------------------------- #
-# Linux and MacOS X installation
-# ---------------------------------------------------------------------------- #
+Installing cplex is a relatively easy task.  The difficulties began when I tried to install a link from R.  Either cplexAPI or Rcplex.  You can search and see that there is very little helpful information in the usual places.  I reached out to the developers and Jonathan of cplexAPI responded with very helpful troubleshooting and instructions.
 
-The locations of the CPLEX callable library and the CPLEX include directory
-can be found in <cplex_dir>/README.html>, where <cplex_dir> is the CPLEX
-installation directory.  Also have a look at the variables CLNFLAGS and COPT
-in the example Makefile of your CPLEX installation. There, the variable
-CPLEXLIBDIR points to the callable library directory.
+We (honestly, all Jonathan) determined that the following sequence should correctly install cplexAPI.  First, read the directions.
 
+1. After downloading, unpack the .tar.gz file someplace.  I am going to unpack mine on the desktop.
 
-There are several ways of installing the cplexAPI package:
+2. Open the newly created folder cplexAPI and you will find a directory labeled src.  Open the Makevars.win file within that folder.  I have Notepad++ installed, so I right click Makevars.win and open withNotepad++.  The instructions note that you will need to find each of these directories and type them in.  They may (and probably will if you are using any other version).
 
-1) Set variables PKG_CFLAGS, PKG_CPPFLAGS and PKG_LIBS directly, e.g.:
+PKG_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I"C:/Program Files/IBM/ILOG/CPLEX_Studio127/cplex/include"
+PKG_LIBS=-L"C:/Program Files/IBM/ILOG/CPLEX_Studio127/cplex/bin/x64_win64" -lm -lcplex1270
 
-   R CMD INSTALL --configure-args =" \
-   PKG_CFLAGS='-m64 -fPIC' \
-   PKG_CPPFLAGS='-I<cplex_dir>/cplex/include' \
-   PKG_LIBS='-L${CPLEXLIBDIR} -lcplex -m64 -lm -pthread'" \
-   cplexAPI_x.x.x.tar.gz
-
-   PKF_CFLAGS is optional, but both PKG_CPPFLAGS and PKG_LIBS must be given.
-
-2) Use --with-cplex-<ARG>:
-
-   --with-cplex-include=PATH    with PATH being the include directory of CPLEX
-
-   --with-cplex-lib=PATH        with PATH being the directory containing the
-                                callable library of CPLEX.
-
-   R CMD INSTALL --configure-args=" \
-       --with-cplex-include=/path/to/include/dir \
-       --with-cplex-lib=/path/to/lib/dir" cplexAPI_x.x.x.tar.gz
-
-   When using --with-cplex-<ARG>, both arguments --with-cplex-lib and
-   --with-cplex-include must be given.
-
-   --with-cplex-link=-l...      libraries to path to the linker during
-                                compilation.
-
-   If --with-cplex-link is not given, '-lcplex -lm -pthread' will be used
-   as default.
-
-   --with-cplex-cflags=...       optional CFLAGS
-
-   A further argument can be used in order to use the debuging routines included
-   in the C API of CPLEX:
-
-   --with-cplex-check=PATH      with PATH being the directory containing the
-                                file check.c from the CPLEX examples directory.
-
-   R CMD INSTALL --configure-args=" \
-   --with-cplex-lib='/path/to/lib/dir' \
-   --with-cplex-include='/path/to/include/dir' \
-   --with-cplex-link='-lcplex -m64 -lm -pthread' \
-   --with-cplex-cflags='-m64 -fPIC' \
-   --with-cplex-check='/path/to/examples/dir/examples/src/c'" \
-   cplexAPI_x.x.x.tar.gz
+After saving you will need to repackage cplexAPI.  Head over to the command line (remember I unpacked my tar.gz file on my desktop) and use the command:
 
 
-3) Give the location of the CPLEX installation:
+3.
+a. goto C:\Users\{{your name here}}\Documents\R\win-library\3.5
+b. create a new folder called cplexAPI 
+c. Create another folder inside cplexAPI called libs
+d. Create another folder inside libs called x64
 
-   --with-cplex-dir=PATH
-   
-   with PATH being the CPLEX directory.
+so, you have this folder C:\Users\{{your name here}}\Documents\R\win-library\3.5\cplexAPI\libs\x64
 
-   R CMD INSTALL --configure-args=" 
-   --with-cplex-dir='<cplex_dir>/cplex'" \
-   cplexAPI_x.x.x.tar.gz
-
-   This procedure will take the first system type and library format it finds.
-   Information reqired for the compilation is taken from the example Makefile.
+The goto the installation folder for CPLEX application C:\Program Files\IBM\ILOG\CPLEX_Enterprise_Server1210\CPLEX_Studio\cplex\bin\x64_win64 and copy the file cplex12100.dll into the folder  C:\Users\{{your name here}}\Documents\R\win-library\3.5\cplexAPI\libs\x64
 
 
-4) Give no information:
+4. R CMD build --no-build-vignettes --no-manual  --md5     C:\Users\{your name here}\Desktop\cplexAPI
 
-   R CMD INSTALL cplexAPI_x.x.x.tar.gz
-   
-   This procedure will try to find the CPLEX interactive optimizer, or the
-   CPLEX_BIN environment variable pointing to the CPLEX interactive optimizer
-   will be used. The directory two levels above is used as CPLEX directory, all
-   other information is taken from the CPLEX example Makefile as in #3 above.
+This will repackage the folder, avoiding the md5 error you can find while searching for solutions.  After a successful repackage you can then install the package at the command line.
+
+5. R CMD INSTALL --build --no-multiarch .\cplexAPI_1.3.3.tar.gz
+
+At this point, you may have errors.  The key you are looking for is this output:
+
+packaged installation of 'cplexAPI' as cplexAPI_1.3.3.zip
+DONE (cplexAPI)
 
 
-# ---------------------------------------------------------------------------- #
-# Windows installation
-# ---------------------------------------------------------------------------- #
+Credit to 
+https://jholderieath.wordpress.com/2017/01/26/using-cplex-in-r-installing-cplexapi-in-windows-10/
+https://github.com/cran/cplexAPI/blob/master/inst/INSTALL
 
-For the installation on Windows systems the file Makewars.win in src/ is
-required. The file looks like this:
-
-PKG_CPPFLAGS=-g -D_R_=1 -DUSE_R=1 -I"${CPLEX_STUDIO_DIR}\cplex\include"
-PKG_LIBS=-L"${CPLEX_STUDIO_LIB}" -lm -lcplex12100
-
-with the environment variable CPLEX_STUDIO_DIR being the installation directory
-of CPLEX and CPLEX_STUDIO_LIB being the library directory of CPLEX (for example
-C:/PROGRA~1/IBM/ILOG/CPLEX_Studio128/cplex/bin/x64_win64). 
 
 This procedure was tested successfully with IBM ILOG CPLEX 12.10  
 on 64-bit Windows 10 using Rtools 3.5.
 
 
-# ---------------------------------------------------------------------------- #
-
-See also: http://www.stats.ox.ac.uk/~ripley/Win64/W64porting.html
-
-If you want to have both 32- and 64 bit DLLs of libcplex in your PATH,
-a good way is to set PATH in
-R_HOME/etc/i386/Renviron.site for 32-bit and in
-R_HOME/etc/x64/Renviron.site for 64-bit.
-Also the variables CPLEX_STUDIO_DIR, CPLEX_STUDIO_LIB32 and
-CPLEX_STUDIO_LIB64 can be set here.
